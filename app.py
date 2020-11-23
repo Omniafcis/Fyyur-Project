@@ -152,13 +152,21 @@ def search_venues():
   # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
   # seach for Hop should return "The Musical Hop".
   # search for "Music" should return "The Musical Hop" and "Park Square Live Music & Coffee"
+
+  #get all the results of the search in venuesearch_list 
+  venuesearch_list = Venue.query.filter(Venue.name.ilike('%{}%'.format(request.form.get('search_term',''))))
+  result_objlist = []
+  count = 0
+  #loop on every object in the venues list returned from the query and prepare the needed list of objects with a specific format for the front end
+  for resultobj in venuesearch_list:
+    count += 1
+    upcomingshows_list = db.session.query(show_artist).filter(show_artist.c.venue_id == resultobj.id, show_artist.c.start_time > datetime.today()).all()
+    result_objlist.append({"id": resultobj.id,
+                      "name": resultobj.name,
+                      "num_upcoming_shows":len(upcomingshows_list)})
   response={
-    "count": 1,
-    "data": [{
-      "id": 2,
-      "name": "The Dueling Pianos Bar",
-      "num_upcoming_shows": 0,
-    }]
+    "count": count,
+    "data": result_objlist
   }
   return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search_term', ''))
 
@@ -289,13 +297,21 @@ def search_artists():
   # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
   # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band".
   # search for "band" should return "The Wild Sax Band".
+
+  #get all the results of the search in artistsearch_list 
+  artistsearch_list = Artist.query.filter(Artist.name.ilike('%{}%'.format(request.form.get('search_term',''))))
+  result_objlist = []
+  count = 0
+  #loop on every object in the artists list returned from the query and prepare the needed list of objects with a specific format for the front end
+  for resultobj in artistsearch_list:
+    count += 1
+    upcomingshows_list = db.session.query(show_artist).filter(show_artist.c.artist_id == resultobj.id, show_artist.c.start_time > datetime.today()).all()
+    result_objlist.append({"id": resultobj.id,
+                      "name": resultobj.name,
+                      "num_upcoming_shows":len(upcomingshows_list)})
   response={
-    "count": 1,
-    "data": [{
-      "id": 4,
-      "name": "Guns N Petals",
-      "num_upcoming_shows": 0,
-    }]
+    "count": count,
+    "data": result_objlist
   }
   return render_template('pages/search_artists.html', results=response, search_term=request.form.get('search_term', ''))
 
